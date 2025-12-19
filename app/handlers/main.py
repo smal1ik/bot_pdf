@@ -36,7 +36,7 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot):
 async def answer_message(callback: types.CallbackQuery, bot: Bot):
     member = await bot.get_chat_member(chat_id=env_config('CHANNEL_ID'), user_id=callback.from_user.id)
     if member.status in ("member", "administrator", "creator"):
-        await callback.message.answer(report_msg, reply_markup=report_btn)
+        await callback.message.answer(answer_1_msg, reply_markup=answer_1_btn)
         await user_subscribe(callback.from_user.id)
     else:
         await callback.message.answer(unsubscribe_msg, reply_markup=subscribe_btn)
@@ -141,10 +141,10 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
     data = await state.get_data()
     data["answers"][9] = answer
     await create_report(data["answers"], data["text_1"], data["text_2"], callback.from_user.id)
-    await callback.message.answer("Отчет", reply_markup=result_btn)
+    await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg,
+                                           reply_markup=end_btn)
 
-
-@main_handler.callback_query(F.data == "result")
-async def answer_message(callback: types.CallbackQuery, bot: Bot):
-    await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg, reply_markup=end_btn)
+# @main_handler.callback_query(F.data == "result")
+# async def answer_message(callback: types.CallbackQuery, bot: Bot):
+#     await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg, reply_markup=end_btn)
 
