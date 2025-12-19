@@ -1,13 +1,14 @@
 from aiogram import Router, Bot, types, F
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import FSInputFile
+from aiogram.types import FSInputFile, InputMediaPhoto
 
 from app.database.requests import get_user, add_user, user_subscribe
 from app.keyboards.main import *
 from app.texts.main import *
 from decouple import config as env_config
 
+from app.utils.functions import create_report
 from app.utils.state import UserState
 
 main_handler = Router()
@@ -43,26 +44,13 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot):
 
 @main_handler.callback_query(F.data == "report")
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
-    await callback.message.answer(photo_msg)
-    await state.set_state(UserState.photo)
-
-
-@main_handler.message(UserState.photo)
-async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
-    if message.photo:
-        photo = message.photo[-1]
-        file = await bot.get_file(photo.file_id)
-        await bot.download_file(file.file_path, f"users_photo/{message.from_user.id}.jpg")
-        await message.answer(answer_1_msg, reply_markup=answer_1_btn)
-        await state.set_state(UserState.start)
-    else:
-        await message.answer(photo_error_msg)
+    await callback.message.answer(answer_1_msg, reply_markup=answer_1_btn)
 
 
 @main_handler.callback_query(F.data.contains("answer_1_"))
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     answer = callback.data.split("_")[-1]
-    await state.update_data(answers=[answer])
+    await state.update_data(answers={1: answer})
     await callback.message.answer(answer_2_msg, reply_markup=answer_2_btn)
 
 
@@ -70,7 +58,7 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
-    data["answers"].append(answer)
+    data["answers"][2] = answer
     await state.update_data(answers=data["answers"])
     await callback.message.answer(answer_3_msg)
     await state.set_state(UserState.text_1)
@@ -80,6 +68,15 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
     if message.text:
         await state.update_data(text_1=message.text)
+        data = await state.get_data()
+        data["answers"][3] = 1
+        await state.update_data(answers=data["answers"])
+        media = [
+            InputMediaPhoto(media=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/mems_1.png")),
+            InputMediaPhoto(media=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/mems_2.png")),
+            InputMediaPhoto(media=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/mems_3.png")),
+        ]
+        await bot.send_media_group(chat_id=message.chat.id, media=media)
         await message.answer(answer_4_msg, reply_markup=answer_4_btn)
         await state.set_state(UserState.start)
     else:
@@ -90,7 +87,7 @@ async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
-    data["answers"].append(answer)
+    data["answers"][4] = answer
     await state.update_data(answers=data["answers"])
     await callback.message.answer(answer_5_msg)
     await state.set_state(UserState.text_2)
@@ -100,7 +97,12 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
     if message.text:
         await state.update_data(text_2=message.text)
-        await message.answer(answer_6_msg, reply_markup=answer_6_btn)
+        data = await state.get_data()
+        data["answers"][5] = 1
+        await state.update_data(answers=data["answers"])
+        await message.answer_photo(caption=answer_6_msg,
+                                   reply_markup=answer_6_btn,
+                                   photo=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/visual.png"))
         await state.set_state(UserState.start)
     else:
         await message.answer(answer_5_error_msg)
@@ -110,7 +112,7 @@ async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
-    data["answers"].append(answer)
+    data["answers"][6] = answer
     await state.update_data(answers=data["answers"])
     await callback.message.answer(answer_7_msg, reply_markup=answer_7_btn)
 
@@ -119,7 +121,7 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
-    data["answers"].append(answer)
+    data["answers"][7] = answer
     await state.update_data(answers=data["answers"])
     await callback.message.answer(answer_8_msg, reply_markup=answer_8_btn)
 
@@ -128,7 +130,7 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
-    data["answers"].append(answer)
+    data["answers"][8] = answer
     await state.update_data(answers=data["answers"])
     await callback.message.answer(answer_9_msg, reply_markup=answer_9_btn)
 
@@ -137,14 +139,13 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
-    data["answers"].append(answer)
-    # await create_report(data["answers"], data["text_1"], data["text_2"], callback.from_user.id)
-    await callback.message.answer(result_msg + f"{data['answers']}", reply_markup=result_btn)
+    data["answers"][9] = answer
+    await create_report(data["answers"], data["text_1"], data["text_2"], callback.from_user.id)
+    await callback.message.answer("Отчет", reply_markup=result_btn)
 
 
 @main_handler.callback_query(F.data == "result")
 async def answer_message(callback: types.CallbackQuery, bot: Bot):
-    # Шлем документ
-    # await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"))
+    await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"))
     await callback.message.answer(end_msg, reply_markup=end_btn)
 
