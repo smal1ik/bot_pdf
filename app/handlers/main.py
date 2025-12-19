@@ -146,6 +146,5 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 
 @main_handler.callback_query(F.data == "result")
 async def answer_message(callback: types.CallbackQuery, bot: Bot):
-    await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"))
-    await callback.message.answer(end_msg, reply_markup=end_btn)
+    await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg, reply_markup=end_btn)
 
