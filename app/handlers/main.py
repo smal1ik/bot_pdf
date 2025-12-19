@@ -22,7 +22,7 @@ async def cmd_message(message: types.Message, bot: Bot, command: Command):
     elif not user.subscribed:
         await message.answer(subscribe_msg, reply_markup=subscribe_btn)
     else:
-        await message.answer(report_msg, reply_markup=report_btn)
+        await message.answer(answer_1_msg, reply_markup=answer_1_btn)
 
 
 @main_handler.callback_query(F.data == "start")
