@@ -2,7 +2,7 @@ import asyncio
 from typing import List, Dict
 from PIL.ImageDraw import ImageDraw
 from PIL import Image, ImageDraw, ImageFont
-
+from decouple import config as env_config
 
 async def create_report(
         answers: Dict[int, str],
@@ -17,7 +17,7 @@ async def create_report(
     # ===== СКЛЕЙКА КАРТИНОК =====
     for k, v in answers.items():
         img = Image.open(
-            f"/Users/matvei/PycharmProjects/PythonProject/app/src/part_{k}_{v}.png"
+            env_config("GLOBAL_PATH") + f"app/src/part_{k}_{v}.png"
         ).convert("RGBA")
 
         merged_img.paste(img, (x, y), img)
@@ -30,34 +30,66 @@ async def create_report(
         x += img.size[0]
 
     # ===== ШРИФТ =====
-    font_path = "/Users/matvei/PycharmProjects/PythonProject/app/fonts/helvetica_bold.otf"
+    font_path = env_config("GLOBAL_PATH") + "app/fonts/helvetica_bold.otf"
 
     font_text_1 = ImageFont.truetype(font_path, 42)  # письмо
     font_text_2 = ImageFont.truetype(font_path, 48)  # имя
 
-    # ===== ПИСЬМО — БЕЗ ЦЕНТРИРОВАНИЯ =====
+    # ===== ПЕРЕНОС ТЕКСТА ПО ШИРИНЕ =====
+    def wrap_text(text, font, max_width, draw):
+        words = text.split()
+        lines = []
+        current_line = ""
+
+        for word in words:
+            test_line = f"{current_line} {word}".strip()
+            w = draw.textbbox((0, 0), test_line, font=font)[2]
+
+            if w <= max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+
+        if current_line:
+            lines.append(current_line)
+
+        return lines
+
+    # ===== ПИСЬМО (С ПЕРЕНОСОМ) =====
     def draw_letter_text(base_img, text, position, size, angle, font):
         text_layer = Image.new("RGBA", size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(text_layer)
 
-        # рисуем от левого верхнего угла
-        draw.text((0, 0), text, font=font, fill=(0, 0, 0, 255))
+        lines = wrap_text(text, font, size[0], draw)
+
+        y_offset = 0
+        line_height = draw.textbbox((0, 0), "Ay", font=font)[3]
+
+        for line in lines:
+            draw.text((0, y_offset), line, font=font, fill=(0, 0, 0, 255))
+            y_offset += line_height
 
         rotated = text_layer.rotate(angle, expand=True)
         base_img.paste(rotated, position, rotated)
 
-    # ===== ИМЯ — ЦЕНТР ТОЛЬКО ПО ГОРИЗОНТАЛИ =====
+    # ===== ИМЯ (С ПЕРЕНОСОМ + ЦЕНТР ПО X) =====
     def draw_name_text(base_img, text, position, size, angle, font):
         text_layer = Image.new("RGBA", size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(text_layer)
 
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
+        lines = wrap_text(text, font, size[0], draw)
 
-        text_x = (size[0] - text_width) // 2
-        text_y = 0
+        y_offset = 0
+        line_height = draw.textbbox((0, 0), "Ay", font=font)[3]
 
-        draw.text((text_x, text_y), text, font=font, fill=(0, 0, 0, 255))
+        for line in lines:
+            bbox = draw.textbbox((0, 0), line, font=font)
+            line_width = bbox[2] - bbox[0]
+
+            x = (size[0] - line_width) // 2
+            draw.text((x, y_offset), line, font=font, fill=(0, 0, 0, 255))
+            y_offset += line_height
 
         rotated = text_layer.rotate(angle, expand=True)
         base_img.paste(rotated, position, rotated)
@@ -84,10 +116,10 @@ async def create_report(
 
     # ===== СОХРАНЕНИЕ =====
     merged_img.save(
-        f"/Users/matvei/PycharmProjects/PythonProject/users_report/{name_report}.png"
+        env_config("GLOBAL_PATH") + f"users_report/{name_report}.png"
     )
 
-asyncio.run(create_report({1: '2', 2: '2', 3: 1, 4: '3', 5: 1, 6: '1', 7: '2', 8: '2', 9: '2'},
-                          text_1="123123123",
-                          text_2="123123123",
-                          name_report="report",))
+# asyncio.run(create_report({1: '2', 2: '2', 3: 1, 4: '3', 5: 1, 6: '1', 7: '2', 8: '2', 9: '2'},
+#                           text_1="1234563213 213 289 123456789 123456789 12345678",
+#                           text_2="123123123",
+#                           name_report="report",))

@@ -72,9 +72,9 @@ async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
         data["answers"][3] = 1
         await state.update_data(answers=data["answers"])
         media = [
-            InputMediaPhoto(media=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/mems_1.png")),
-            InputMediaPhoto(media=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/mems_2.png")),
-            InputMediaPhoto(media=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/mems_3.png")),
+            InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_1.png")),
+            InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_2.png")),
+            InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_3.png")),
         ]
         await bot.send_media_group(chat_id=message.chat.id, media=media)
         await message.answer(answer_4_msg, reply_markup=answer_4_btn)
@@ -102,7 +102,7 @@ async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
         await state.update_data(answers=data["answers"])
         await message.answer_photo(caption=answer_6_msg,
                                    reply_markup=answer_6_btn,
-                                   photo=FSInputFile("/Users/matvei/PycharmProjects/PythonProject/app/src/visual.png"))
+                                   photo=FSInputFile(env_config("GLOBAL_PATH") + "app/src/visual.png"))
         await state.set_state(UserState.start)
     else:
         await message.answer(answer_5_error_msg)
