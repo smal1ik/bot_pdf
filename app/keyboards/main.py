@@ -188,7 +188,7 @@ end_btn = InlineKeyboardBuilder()
 end_btn.row(
     types.InlineKeyboardButton(
         text="Поделиться с другом",
-        callback_data="share"
+        switch_inline_query=""
     )
 )
 end_btn.row(

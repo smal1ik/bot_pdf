@@ -1,7 +1,7 @@
 from aiogram import Router, Bot, types, F
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import FSInputFile, InputMediaPhoto
+from aiogram.types import FSInputFile, InputMediaPhoto, InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 
 from app.database.requests import get_user, add_user, user_subscribe
 from app.keyboards.main import *
@@ -12,6 +12,21 @@ from app.utils.functions import create_report
 from app.utils.state import UserState
 
 main_handler = Router()
+
+
+@main_handler.inline_query()
+async def inline_referral(query: InlineQuery, bot: Bot):
+    text = "https://t.me/egor_is_typing_report_bot"
+    title = """Поделиться"""
+    await query.answer([
+        InlineQueryResultArticle(
+            title=title,
+            input_message_content=InputTextMessageContent(
+                message_text=text
+            )
+        )
+    ],
+        cache_time=0)
 
 
 @main_handler.message(Command("start"))
