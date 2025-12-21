@@ -6,3 +6,4 @@ class UserState(StatesGroup):
     photo = State()
     text_1 = State()
     text_2 = State()
+    generatePhoto = State()

@@ -37,7 +37,7 @@ report_btn = report_btn.as_markup()
 answer_1_btn = InlineKeyboardBuilder()
 answer_1_btn.row(
     types.InlineKeyboardButton(
-        text="Личностный ростом",
+        text="Личностным ростом",
         callback_data="answer_1_1"
     )
 )
@@ -157,7 +157,7 @@ answer_8_btn = answer_8_btn.as_markup()
 answer_9_btn = InlineKeyboardBuilder()
 answer_9_btn.row(
     types.InlineKeyboardButton(
-        text="Не обращать внимание на токсичных коллег",
+        text="Игнорировать токсичных коллег",
         callback_data="answer_9_1"
     )
 )

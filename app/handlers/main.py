@@ -67,18 +67,21 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 @main_handler.message(UserState.text_1)
 async def answer_message(message: types.Message, bot: Bot, state: FSMContext):
     if message.text:
-        await state.update_data(text_1=message.text)
-        data = await state.get_data()
-        data["answers"][3] = 1
-        await state.update_data(answers=data["answers"])
-        media = [
-            InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_1.png")),
-            InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_2.png")),
-            InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_3.png")),
-        ]
-        await bot.send_media_group(chat_id=message.chat.id, media=media)
-        await message.answer(answer_4_msg, reply_markup=answer_4_btn)
-        await state.set_state(UserState.start)
+        if len(message.text) <= 50:
+            await state.update_data(text_1=message.text)
+            data = await state.get_data()
+            data["answers"][3] = 1
+            await state.update_data(answers=data["answers"])
+            media = [
+                InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_1.png")),
+                InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_2.png")),
+                InputMediaPhoto(media=FSInputFile(env_config("GLOBAL_PATH") + "app/src/mems_3.png")),
+            ]
+            await bot.send_media_group(chat_id=message.chat.id, media=media)
+            await message.answer(answer_4_msg, reply_markup=answer_4_btn)
+            await state.set_state(UserState.start)
+        else:
+            await message.answer(answer_3_error_msg)
     else:
         await message.answer(answer_3_error_msg)
 
@@ -133,18 +136,17 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
     data["answers"][8] = answer
     await state.update_data(answers=data["answers"])
     await callback.message.answer(answer_9_msg, reply_markup=answer_9_btn)
+    await state.set_state(UserState.generatePhoto)
 
 
-@main_handler.callback_query(F.data.contains("answer_9_"))
+@main_handler.callback_query(F.data.contains("answer_9_"), UserState.generatePhoto)
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
+    await state.set_state(UserState.start)
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
     data["answers"][9] = answer
     await create_report(data["answers"], data["text_1"], data["text_2"], callback.from_user.id)
+    msg = await callback.message.answer("Отчет в работе, подожди немного.")
     await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg,
                                            reply_markup=end_btn)
-
-# @main_handler.callback_query(F.data == "result")
-# async def answer_message(callback: types.CallbackQuery, bot: Bot):
-#     await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg, reply_markup=end_btn)
-
+    await msg.delete()
