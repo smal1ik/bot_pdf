@@ -156,12 +156,12 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
 
 @main_handler.callback_query(F.data.contains("answer_9_"), UserState.generatePhoto)
 async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
+    msg = await callback.message.answer("Отчет в работе, подожди немного.")
     await state.set_state(UserState.start)
     answer = callback.data.split("_")[-1]
     data = await state.get_data()
     data["answers"][9] = answer
     await create_report(data["answers"], data["text_1"], data["text_2"], callback.from_user.id)
-    msg = await callback.message.answer("Отчет в работе, подожди немного.")
     await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg,
                                            reply_markup=end_btn)
     await msg.delete()
