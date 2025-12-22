@@ -22,3 +22,4 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(nullable=True)
     username: Mapped[str] = mapped_column(nullable=True)
     subscribed: Mapped[bool] = mapped_column(Boolean, default=False)
+    click_id: Mapped[str] = mapped_column(nullable=True)

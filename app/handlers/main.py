@@ -1,9 +1,11 @@
+import os
+
 from aiogram import Router, Bot, types, F
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile, InputMediaPhoto, InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 
-from app.database.requests import get_user, add_user, user_subscribe
+from app.database.requests import get_user, add_user, user_subscribe, get_statistics
 from app.keyboards.main import *
 from app.texts.main import *
 from decouple import config as env_config
@@ -16,7 +18,8 @@ main_handler = Router()
 
 @main_handler.inline_query()
 async def inline_referral(query: InlineQuery, bot: Bot):
-    text = "https://t.me/egor_is_typing_report_bot"
+    ref = query.query
+    text = f"https://t.me/egor_is_typing_report_bot?start={ref}"
     title = """Поделиться"""
     await query.answer([
         InlineQueryResultArticle(
@@ -29,11 +32,45 @@ async def inline_referral(query: InlineQuery, bot: Bot):
         cache_time=0)
 
 
+@main_handler.message(Command("statistics"))
+async def cmd_message(message: types.Message, bot: Bot):
+    stats = await get_statistics()
+    stats['total_generations'] = len(os.listdir("/users_report"))
+    msg = f"""Всего пользователей: {stats['total_users']}
+Всего генераций: {stats['total_generations']}
+
+
+"""
+    for click_name, count in stats['total_click_id'].items():
+        msg += f"{click_name}: {count}\n"
+
+    await message.answer(msg)
+
+
+
 @main_handler.message(Command("start"))
 async def cmd_message(message: types.Message, bot: Bot, command: Command):
     user = await get_user(message.from_user.id)
     if not user:
+        args = command.args
+        click_id = None
+
+        if args and args.isdigit():
+            click_id = "referral"
+            await message.answer_document(FSInputFile(f"users_report/{args}.png"),
+                                          caption="Вот такой отчет у твоего друга!",
+                                          reply_markup=start_ref)
+            await add_user(message.from_user.id, message.from_user.first_name, message.from_user.username,
+                           message.from_user.full_name, click_id=click_id)
+            return
+
+        elif args:
+            click_id = args
+
         await message.answer(start_msg, reply_markup=start_btn, disable_web_page_preview=True)
+        await add_user(message.from_user.id, message.from_user.first_name, message.from_user.username,
+                       message.from_user.full_name, click_id=click_id)
+
     elif not user.subscribed:
         await message.answer(subscribe_msg, reply_markup=subscribe_btn)
     else:
@@ -43,8 +80,6 @@ async def cmd_message(message: types.Message, bot: Bot, command: Command):
 @main_handler.callback_query(F.data == "start")
 async def answer_message(callback: types.CallbackQuery, bot: Bot):
     await callback.message.answer(subscribe_msg, reply_markup=subscribe_btn)
-    await add_user(callback.from_user.id, callback.from_user.first_name, callback.from_user.username,
-                   callback.from_user.full_name)
 
 
 @main_handler.callback_query(F.data == "check_subscribe")
@@ -163,5 +198,5 @@ async def answer_message(callback: types.CallbackQuery, bot: Bot, state: FSMCont
     data["answers"][9] = answer
     await create_report(data["answers"], data["text_1"], data["text_2"], callback.from_user.id)
     await callback.message.answer_document(FSInputFile(f"users_report/{callback.from_user.id}.png"), caption=end_msg,
-                                           reply_markup=end_btn)
+                                           reply_markup=get_end_btn(callback.from_user.id))
     await msg.delete()

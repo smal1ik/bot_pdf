@@ -184,17 +184,30 @@ result_btn.row(
 )
 result_btn = result_btn.as_markup()
 
-end_btn = InlineKeyboardBuilder()
-end_btn.row(
+
+def get_end_btn(ref):
+    end_btn = InlineKeyboardBuilder()
+    end_btn.row(
+        types.InlineKeyboardButton(
+            text="Поделиться с другом",
+            switch_inline_query=f"{ref}"
+        )
+    )
+    end_btn.row(
+        types.InlineKeyboardButton(
+            text="Создать ещё один отчет",
+            callback_data="report"
+        )
+    )
+    end_btn = end_btn.as_markup()
+    return end_btn
+
+
+start_ref = InlineKeyboardBuilder()
+start_ref.row(
     types.InlineKeyboardButton(
-        text="Поделиться с другом",
-        switch_inline_query=""
+        text="Создать свой отчет",
+        callback_data="start"
     )
 )
-end_btn.row(
-    types.InlineKeyboardButton(
-        text="Пройти опрос еще раз",
-        callback_data="report"
-    )
-)
-end_btn = end_btn.as_markup()
+start_ref = start_ref.as_markup()
