@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from aiogram import Router, Bot, types, F
 from aiogram.filters.command import Command
@@ -19,10 +20,15 @@ main_handler = Router()
 @main_handler.inline_query()
 async def inline_referral(query: InlineQuery, bot: Bot):
     ref = query.query
-    text = f"https://t.me/egor_is_typing_report_bot?start={ref}"
+    text = f"""Друг отправил тебе свой годовой отчёт, посмотри его. 
+
+Тут можно получить и свой персональный вариант, достаточно ответить на несколько вопросов. Отправляй бота в рабочий чат, порадуй коллег перед выходными.
+https://t.me/egor_is_typing_report_bot?start={ref}
+"""
     title = """Поделиться"""
     await query.answer([
         InlineQueryResultArticle(
+            id=str(uuid.uuid4()),
             title=title,
             input_message_content=InputTextMessageContent(
                 message_text=text
