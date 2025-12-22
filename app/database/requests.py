@@ -40,6 +40,7 @@ async def get_statistics():
         stats['total_users'] = await session.scalar(select(func.count(User.tg_id)))
         stats['total_click_id'] = (await session.execute(
             select(User.click_id, func.count(User.tg_id))
+            .where(User.click_id != None)
             .group_by(User.click_id)
             )).fetchall()
         return stats
