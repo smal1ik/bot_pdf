@@ -2,6 +2,8 @@ import os
 import uuid
 
 from aiogram import Router, Bot, types, F
+import aiohttp
+import asyncio
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile, InputMediaPhoto, InlineQuery, InlineQueryResultArticle, InputTextMessageContent
@@ -32,6 +34,23 @@ async def inline_referral(query: InlineQuery, bot: Bot):
         )
     ],
         cache_time=0)
+
+
+async def send_postback(clickid):
+    url = "https://offers-socialjet-cpa.affise.com/postback"
+    params = {
+        'clickid': clickid
+    }
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, params=params) as response:
+                if response.status == 200:
+                    print(f"Успех: {clickid} — {await response.text()}")
+                else:
+                    print(f"Ошибка: {clickid} — статус {response.status}")
+        except Exception as e:
+            print(f"Исключение при запросе {clickid}: {e}")
 
 
 @main_handler.message(Command("statistics"))
@@ -65,8 +84,8 @@ async def cmd_message(message: types.Message, bot: Bot, command: Command):
                            message.from_user.full_name, click_id=click_id)
             return
         elif args and len(args) == 24:
-            args = "click_id"
-
+            await send_postback(f"{args}_{message.from_user.id}")
+            click_id = "click_id"
         elif args:
             click_id = args
 
