@@ -46,7 +46,7 @@ async def cmd_message(message: types.Message, bot: Bot):
 
 
 """
-    for click_name, count in stats['total_click_id'].items():
+    for click_name, count in stats['total_click_id']:
         msg += f"{click_name}: {count}\n"
 
     await message.answer(msg)
