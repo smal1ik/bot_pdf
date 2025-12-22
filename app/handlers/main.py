@@ -20,11 +20,7 @@ main_handler = Router()
 @main_handler.inline_query()
 async def inline_referral(query: InlineQuery, bot: Bot):
     ref = query.query
-    text = f"""Друг отправил тебе свой годовой отчёт, посмотри его. 
-
-Тут можно получить и свой персональный вариант, достаточно ответить на несколько вопросов. Отправляй бота в рабочий чат, порадуй коллег перед выходными.
-https://t.me/egor_is_typing_report_bot?start={ref}
-"""
+    text = f"""https://t.me/egor_is_typing_report_bot?start={ref}"""
     title = """Поделиться"""
     await query.answer([
         InlineQueryResultArticle(
@@ -63,11 +59,13 @@ async def cmd_message(message: types.Message, bot: Bot, command: Command):
         if args and args.isdigit():
             click_id = "referral"
             await message.answer_document(FSInputFile(f"users_report/{args}.png"),
-                                          caption="Вот такой отчет у твоего друга!",
+                                          caption=ref_msg,
                                           reply_markup=start_ref)
             await add_user(message.from_user.id, message.from_user.first_name, message.from_user.username,
                            message.from_user.full_name, click_id=click_id)
             return
+        elif args and len(args) == 24:
+            args = "click_id"
 
         elif args:
             click_id = args
