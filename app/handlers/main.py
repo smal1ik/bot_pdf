@@ -41,9 +41,8 @@ https://t.me/egor_is_typing_report_bot?start={ref}
 @main_handler.message(Command("statistics"))
 async def cmd_message(message: types.Message, bot: Bot):
     stats = await get_statistics()
-    stats['total_generations'] = len(os.listdir("/home/bot/users_report"))
     msg = f"""Всего пользователей: {stats['total_users']}
-Всего генераций: {stats['total_generations']}
+Всего генераций: {len(os.listdir("/home/bot/users_report"))}
 
 
 """
