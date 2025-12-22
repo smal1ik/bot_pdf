@@ -84,7 +84,7 @@ async def cmd_message(message: types.Message, bot: Bot, command: Command):
                            message.from_user.full_name, click_id=click_id)
             return
         elif args and len(args) == 24:
-            await send_postback(f"{args}_{message.from_user.id}")
+            await send_postback(f"{args}{message.from_user.id}")
             click_id = "click_id"
         elif args:
             click_id = args
