@@ -42,4 +42,5 @@ async def get_statistics():
             select(User.click_id, func.count(User.tg_id))
             .group_by(User.click_id)
             )).fetchall()
+        return stats
 
