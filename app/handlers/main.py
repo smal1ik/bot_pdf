@@ -22,9 +22,9 @@ main_handler = Router()
 @main_handler.inline_query()
 async def inline_referral(query: InlineQuery, bot: Bot):
     ref = query.query
-    text = f"""Ого, твой друг сделал свой годовой отчет и решил поделиться с тобой, посмотри его. 
+    text = f"""Ого, твой друг сделал свой годовой отчет и решил поделиться с тобой. 
 
-В боте ты также можешь сделать и свои итоги года, переходи и отвечай на несколько вопросов, чтобы получить персональный вариант: https://t.me/egor_is_typing_report_bot?start={ref}"""
+В боте ты найдёшь отчёт друга и сможешь создать свой собственный, ответив на несколько вопросов. Просто перейди по ссылке: https://t.me/egor_is_typing_report_bot?start={ref}"""
     title = """Поделиться"""
     await query.answer([
         InlineQueryResultArticle(
